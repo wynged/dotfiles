@@ -83,3 +83,31 @@ _disk_usage_warn() {
   fi
 }
 _disk_usage_warn
+
+# --- Modern CLI tools (installed via brew by bootstrap.sh) ---
+# Each is guarded so this block is harmless if the tool isn't installed.
+# fd and bat need no wiring (brew installs them under their real names).
+
+# fzf: Ctrl-R fuzzy history, Ctrl-T fuzzy file picker, ** completion
+command -v fzf >/dev/null && source <(fzf --zsh)
+
+# zoxide: `z <partial>` jumps to your most-used matching dir (smarter cd)
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
+
+# eza: modern ls (icons, git status, tree). Leaves plain `ls` alone.
+if command -v eza >/dev/null; then
+  alias ll='eza -lah --git --group-directories-first'
+  alias la='eza -a --group-directories-first'
+  alias lt='eza --tree --level=2 --group-directories-first'
+fi
+
+# yazi: `y` opens the TUI file manager and cd's to wherever you quit
+if command -v yazi >/dev/null; then
+  y() {
+    local tmp cwd; tmp="$(mktemp -t yazi-cwd.XXXXXX)"
+    yazi "$@" --cwd-file="$tmp"
+    cwd="$(command cat -- "$tmp")"
+    [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+    rm -f -- "$tmp"
+  }
+fi

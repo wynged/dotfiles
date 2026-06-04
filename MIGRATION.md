@@ -62,10 +62,12 @@ gh auth login        # etc.
 What `bootstrap.sh` installs: apt base (build-essential, zsh, tmux, git, stow,
 xclip, wl-clipboard, socat, jq, ripgrep, python3/pipx…); vendor apt repos for
 **gh, wezterm, vscode, docker**; install scripts for **Homebrew, oh-my-zsh, zed,
-cursor CLI, bun, rustup**; **nvm** + Node (LTS + latest); brew **dotnet@8 /
-openjdk@21** (required by `.zshrc`) plus go/deno/yt-dlp; **aws cli v2** (official
-installer) and **aws-sam-cli** (pipx). See the "Apps & tooling" section below and
-the DEFERRED block in `bootstrap.sh` for what's intentionally left out.
+bun, rustup**; **nvm** + Node (LTS + latest); brew **dotnet@8 / openjdk@21**
+(required by `.zshrc`) plus go/deno/yt-dlp; modern CLI tools via brew (**fzf, fd,
+bat, eza, zoxide, yazi, neovim** — wired into `.zshrc`); **aws cli v2** and
+**aws-sam-cli**, both version-pinned (`AWSCLI_VERSION` / `SAM_VERSION` at the top
+of the script) to exactly match the source box. See the "Apps & tooling" section
+below and the DEFERRED block in `bootstrap.sh` for what's intentionally left out.
 
 ## Apps & tooling to install (distilled from the old Windows `install.ps1`)
 

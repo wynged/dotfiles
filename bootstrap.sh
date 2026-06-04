@@ -18,6 +18,8 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ARCH="$(dpkg --print-architecture)"      # amd64 / arm64
 NVM_VERSION="v0.40.1"                     # bump to the latest nvm release tag
+AWSCLI_VERSION="2.27.48"                   # pinned to exactly match the source box
+SAM_VERSION="1.142.1"                      # pinned to exactly match the source box
 DO_STOW=1; [ "${1:-}" = "--no-stow" ] && DO_STOW=0
 
 c()    { printf '\033[1;36m\n==> %s\033[0m\n' "$*"; }   # section header
@@ -107,9 +109,6 @@ fi
 # Zed editor (native — replaces the Windows Zed.exe alias)
 have zed || curl -fsSL https://zed.dev/install.sh | sh
 
-# Cursor CLI agent (the `cursor`/`agent` shim in ~/.local/bin)
-have cursor || curl -fsS https://cursor.com/install | bash
-
 # Bun
 if ! have bun && [ ! -x "$HOME/.bun/bin/bun" ]; then
   curl -fsSL https://bun.sh/install | bash
@@ -142,18 +141,28 @@ brew list go     >/dev/null 2>&1 || brew install go
 brew list deno   >/dev/null 2>&1 || brew install deno
 brew list yt-dlp >/dev/null 2>&1 || brew install yt-dlp
 
+# Modern CLI tools — via brew (latest, correct binary names, no snap). Shell
+# wiring (fzf/zoxide/eza/yazi) lives in the stowed zsh/.zshrc, guarded so it
+# no-ops if a tool is absent.
+for f in fzf fd bat eza zoxide yazi neovim; do
+  brew list "$f" >/dev/null 2>&1 || brew install "$f"
+done
+
 # ─────────────────────────────────────────────────────────────────────────────
-c "6. AWS tooling"
-# AWS CLI v2 — official bundled installer (AWS has no apt repo)
-if ! have aws; then
+c "6. AWS tooling (pinned to the exact versions on the source box)"
+# AWS CLI v2 — official VERSIONED installer so it matches $AWSCLI_VERSION exactly.
+# (the unversioned installer always pulls latest; the -<version>.zip URL pins it)
+if ! have aws || [ "$(aws --version 2>&1 | grep -oP 'aws-cli/\K[0-9.]+')" != "$AWSCLI_VERSION" ]; then
   tmp="$(mktemp -d)"
-  curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o "$tmp/awscliv2.zip"
+  curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m)-${AWSCLI_VERSION}.zip" -o "$tmp/awscliv2.zip"
   unzip -q "$tmp/awscliv2.zip" -d "$tmp"
-  sudo "$tmp/aws/install" --update
+  sudo "$tmp/aws/install" --update    # --update replaces a different installed version
   rm -rf "$tmp"
 fi
-# AWS SAM CLI — via pipx (clean, user-level, self-updating)
-have sam || pipx install aws-sam-cli
+# AWS SAM CLI — pinned via pipx so it matches $SAM_VERSION exactly.
+if ! have sam || [ "$(sam --version 2>&1 | grep -oP 'version \K[0-9.]+')" != "$SAM_VERSION" ]; then
+  pipx install --force "aws-sam-cli==${SAM_VERSION}"
+fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 c "7. Shell + dotfiles"
@@ -182,7 +191,6 @@ note "  • install the Gas City stack with its own bootstrap (see below)"
 #   /home/sirwassail/source/city_hy/lookout/lookout and uses socat (installed
 #   above) for the hall shim. None of that is provisioned here by design.
 #
-# OPTIONAL nice-to-haves you don't currently run (uncomment to add):
-#   sudo apt-get install -y neovim fzf fd-find bat        # note: apt neovim lags
-#   brew install eza zoxide starship                      # modern CLI extras
-#   sudo snap install yazi --classic                      # TUI file manager (you had this)
+# Not installed (available if you ever want them):
+#   starship  — cross-shell prompt; would supersede the oh-my-zsh theme
+#               (brew install starship; then: eval "$(starship init zsh)")

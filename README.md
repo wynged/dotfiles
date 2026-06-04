@@ -22,8 +22,8 @@ wallpapers/   (storage only — not stowed)
 
 **Fresh machine** — `bootstrap.sh` provisions the whole toolchain (apt base,
 vendor apt repos for gh/wezterm/vscode/docker, Homebrew, oh-my-zsh, nvm/node,
-bun, rust, zed, cursor, aws cli + sam) following a best-source-first priority,
-then stows the dotfiles:
+bun, rust, zed, version-pinned aws cli + sam) following a best-source-first
+priority, then stows the dotfiles:
 
 ```bash
 git clone https://github.com/wynged/dotfiles ~/source/dotfiles
