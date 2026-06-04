@@ -20,10 +20,24 @@ wallpapers/   (storage only — not stowed)
 
 ## Install
 
+**Fresh machine** — `bootstrap.sh` provisions the whole toolchain (apt base,
+vendor apt repos for gh/wezterm/vscode/docker, Homebrew, oh-my-zsh, nvm/node,
+bun, rust, zed, cursor, aws cli + sam) following a best-source-first priority,
+then stows the dotfiles:
+
 ```bash
-sudo apt install stow      # one-time
-git clone <this-repo> ~/source/dotfiles
+git clone https://github.com/wynged/dotfiles ~/source/dotfiles
 cd ~/source/dotfiles
+./bootstrap.sh             # full provision + stow  (./bootstrap.sh --no-stow to skip stowing)
+```
+
+It's idempotent — safe to re-run; each step skips anything already installed. Gas
+City tooling is intentionally excluded (separate bootstrap). See `MIGRATION.md`.
+
+**Just the dotfiles** (machine already provisioned):
+
+```bash
+sudo apt install stow
 ./install.sh               # stow every package, or: ./install.sh zsh tmux
 ```
 

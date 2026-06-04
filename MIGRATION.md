@@ -36,32 +36,36 @@ otherwise unchanged — only the process-spawn wrapper differed between WSL and 
 
 ## Setup sequence on the new machine
 
+`bootstrap.sh` does steps 1–4 (provision the toolchain + stow the dotfiles). It's
+idempotent and follows the best-install-source priority; Gas City tooling is left
+to its own bootstrap.
+
 ```bash
-# 1. System packages
-sudo apt update
-sudo apt install -y stow zsh tmux git socat xclip   # add wl-clipboard if on Wayland (see checklist)
-
-# 2. Shell framework + runtimes (as the .zshrc expects them)
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-#   …plus: nvm/node, Homebrew, bun, rust/cargo, dotnet — install whichever you use
-#   (the zshrc guards Homebrew, so missing brew is fine; other tools just won't be on PATH)
-
-# 3. Clone dotfiles
-git clone <remote> ~/source/dotfiles
-#   (copy claude-memory-transfer.tar.gz over SEPARATELY — it's gitignored, see CLAUDE.md)
-
-# 4. Clear any colliding default files stow would refuse to overwrite, then stow
+# 1. Clone + provision everything, then stow
+git clone https://github.com/wynged/dotfiles ~/source/dotfiles
 cd ~/source/dotfiles
-#   e.g. a fresh Ubuntu ships a default ~/.bashrc/.profile but usually no ~/.zshrc;
-#   remove/back up anything real that overlaps a package, OR use `stow --adopt <pkg>`.
-./install.sh
+./bootstrap.sh
+#   (a fresh Ubuntu has no ~/.zshrc, so stow lands clean. If a package collides
+#    with a real file, remove/back it up or use `stow --adopt <pkg>`, then re-run.)
 
-# 5. Restore Claude memories (excluding CLAUDE.md — stow owns it; see CLAUDE.md)
+# 2. Restore Claude memories from the transfer branch (exclude CLAUDE.md — stow owns it)
+git checkout transfer
 tar xzf claude-memory-transfer.tar.gz --exclude='.claude/CLAUDE.md' -C ~
+git checkout main
 
-# 6. Re-auth the things that DON'T travel in dotfiles (see "Not carried over")
+# 3. Re-auth the things that DON'T travel in dotfiles (see "Not carried over")
 gh auth login        # etc.
+
+# 4. Open a new terminal (zsh is now the login shell); log out/in once for docker group.
 ```
+
+What `bootstrap.sh` installs: apt base (build-essential, zsh, tmux, git, stow,
+xclip, wl-clipboard, socat, jq, ripgrep, python3/pipx…); vendor apt repos for
+**gh, wezterm, vscode, docker**; install scripts for **Homebrew, oh-my-zsh, zed,
+cursor CLI, bun, rustup**; **nvm** + Node (LTS + latest); brew **dotnet@8 /
+openjdk@21** (required by `.zshrc`) plus go/deno/yt-dlp; **aws cli v2** (official
+installer) and **aws-sam-cli** (pipx). See the "Apps & tooling" section below and
+the DEFERRED block in `bootstrap.sh` for what's intentionally left out.
 
 ## Apps & tooling to install (distilled from the old Windows `install.ps1`)
 
