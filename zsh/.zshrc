@@ -28,6 +28,13 @@ fpath=(~/.zsh/completions $fpath)
 source $ZSH/oh-my-zsh.sh
 unalias gc 2>/dev/null
 
+# Oh My Posh draws the prompt (half-life theme). oh-my-zsh stays for plugins/
+# completions/aliases; this overrides its theme's prompt. If oh-my-posh isn't
+# installed, the ZSH_THEME prompt above remains as a fallback.
+if command -v oh-my-posh >/dev/null; then
+  eval "$(oh-my-posh init zsh --config "$HOME/.config/oh-my-posh/half-life.omp.json")"
+fi
+
 # User configuration
 
 export NVM_DIR="$HOME/.nvm"
@@ -83,6 +90,13 @@ _disk_usage_warn() {
   fi
 }
 _disk_usage_warn
+
+# pyenv — Python version manager (guarded: no-op if not installed)
+export PYENV_ROOT="$HOME/.pyenv"
+if [ -d "$PYENV_ROOT/bin" ]; then
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  command -v pyenv >/dev/null && eval "$(pyenv init - zsh)"
+fi
 
 # --- Modern CLI tools (installed via brew by bootstrap.sh) ---
 # Each is guarded so this block is harmless if the tool isn't installed.

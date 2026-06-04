@@ -59,15 +59,40 @@ gh auth login        # etc.
 # 4. Open a new terminal (zsh is now the login shell); log out/in once for docker group.
 ```
 
-What `bootstrap.sh` installs: apt base (build-essential, zsh, tmux, git, stow,
-xclip, wl-clipboard, socat, jq, ripgrep, python3/pipx…); vendor apt repos for
-**gh, wezterm, vscode, docker**; install scripts for **Homebrew, oh-my-zsh, zed,
-bun, rustup**; **nvm** + Node (LTS + latest); brew **dotnet@8 / openjdk@21**
-(required by `.zshrc`) plus go/deno/yt-dlp; modern CLI tools via brew (**fzf, fd,
-bat, eza, zoxide, yazi, neovim** — wired into `.zshrc`); **aws cli v2** and
-**aws-sam-cli**, both version-pinned (`AWSCLI_VERSION` / `SAM_VERSION` at the top
-of the script) to exactly match the source box. See the "Apps & tooling" section
-below and the DEFERRED block in `bootstrap.sh` for what's intentionally left out.
+What `bootstrap.sh` installs (best-source-first; **no snap, no Flatpak**): apt
+base + CLI utils; vendor repos/PPAs for **gh, wezterm, docker, git-core, chrome,
+tailscale, handbrake, makemkv**; install scripts for **Homebrew, oh-my-zsh,
+oh-my-posh, zed, bun, rustup, dolt, pyenv**; **nvm**+Node and **pyenv**+Python
+(3.13); brew **dotnet@8 / openjdk@21** (required by `.zshrc`) + go/deno/yt-dlp/
+glow + modern CLI (fzf/fd/bat/eza/zoxide/yazi/neovim, wired into `.zshrc`);
+version-pinned **aws cli v2 / sam**; and desktop apps via apt/PPA/vendor-`.deb`
+(Chrome, Steam, VLC, Flameshot, guvcview, Dropbox, Discord, Parsec, Obsidian,
+LocalSend — Slack as a Chrome PWA). `--skip-apps` skips the desktop tier.
+
+Prompt: **oh-my-posh draws the prompt** (the `half-life` theme, stowed to
+`~/.config/oh-my-posh/`), with oh-my-zsh kept for plugins/completions; falls back
+to the oh-my-zsh `robbyrussell` theme if oh-my-posh isn't installed. Bootstrap
+also installs a FiraCode Nerd Font for the glyphs — set it as your terminal font.
+
+**Intentionally not installed** (per the migration plan): **VS Code, Cursor**
+(editors are now Zed + Neovim), Firefox/Edge, Zoom, OBS (camera zoom → guvcview).
+
+### Windows-only / deferred — plan around these (from the migration plan)
+
+- **Autodesk / AEC stack** (Revit 2023–27, AutoCAD, pyRevit, RevitLookup, DIALux):
+  no Linux version, no real equivalent → **dual-boot Windows or a Windows VM with
+  GPU passthrough** (KVM/QEMU + VFIO). This is the biggest blocker.
+- **League of Legends**: Riot Vanguard blocks Linux/Wine → unplayable. Battle.net/
+  EA via Lutris/Bottles, per-title.
+- **No native Linux app → use web/PWA**: Notion, MS Teams (client discontinued),
+  Granola (Mac/Win only), Office 365. Re-add Chrome PWAs (Pomofocus, YouTube Music…).
+- **Deferred (learn first)**: **rclone + Google Drive** (no official GDrive client;
+  `apt install rclone` then `rclone config` — practice in WSL first); **Conky**
+  (Rainmeter replacement; `apt install conky-all`, run from i3).
+- **Hardware utils**: AMD GPU = Mesa (built in, nothing to install); sensors via
+  `lm-sensors`+`psensor`, GPU/CPU tuning via **CoreCtrl**; Brother printer/scanner
+  = Brother's Linux drivers; SafeNet/Vanta/Krisp publish native Linux agents.
+- **i3** is assumed already set up (the WM); `sudo apt install i3` if not.
 
 ## Apps & tooling to install (distilled from the old Windows `install.ps1`)
 

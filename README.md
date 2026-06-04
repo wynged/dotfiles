@@ -20,19 +20,28 @@ wallpapers/   (storage only — not stowed)
 
 ## Install
 
-**Fresh machine** — `bootstrap.sh` provisions the whole toolchain (apt base,
-vendor apt repos for gh/wezterm/vscode/docker, Homebrew, oh-my-zsh, nvm/node,
-bun, rust, zed, version-pinned aws cli + sam) following a best-source-first
-priority, then stows the dotfiles:
+**Fresh machine** — `bootstrap.sh` provisions the whole toolchain following a
+best-source-first priority (vendor apt repo / PPA → install script → version
+manager → apt → vendor `.deb`; **no snap, no Flatpak**), then stows the dotfiles:
 
 ```bash
 git clone https://github.com/wynged/dotfiles ~/source/dotfiles
 cd ~/source/dotfiles
-./bootstrap.sh             # full provision + stow  (./bootstrap.sh --no-stow to skip stowing)
+./bootstrap.sh             # CLI/dev + desktop apps + stow
+./bootstrap.sh --skip-apps # dev/headless box: skip the desktop GUI apps
+./bootstrap.sh --no-stow   # skip the final stow step
 ```
 
-It's idempotent — safe to re-run; each step skips anything already installed. Gas
-City tooling is intentionally excluded (separate bootstrap). See `MIGRATION.md`.
+It installs: apt base + CLI utils (7zip, ffmpeg, imagemagick, poppler, qpdf…);
+vendor repos/PPAs for **gh, wezterm, docker, git(-core), chrome, tailscale,
+handbrake, makemkv**; install scripts for **Homebrew, oh-my-zsh, oh-my-posh, zed,
+bun, rustup, dolt, pyenv**; **nvm**+Node and **pyenv**+Python; brew dotnet@8/
+openjdk@21 + go/deno/yt-dlp/glow + modern CLI (fzf/fd/bat/eza/zoxide/yazi/neovim);
+version-pinned **aws cli v2 + sam**; and desktop apps (Chrome, Steam, VLC,
+Flameshot, guvcview, Dropbox, Discord, Parsec, Obsidian, LocalSend; Slack as a
+Chrome PWA). VS Code/Cursor are intentionally **not** installed (editors are Zed +
+Neovim). Idempotent — safe to re-run. Gas City tooling is excluded (separate
+bootstrap). See `MIGRATION.md`.
 
 **Just the dotfiles** (machine already provisioned):
 
