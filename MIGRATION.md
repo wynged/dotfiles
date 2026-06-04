@@ -63,6 +63,30 @@ tar xzf claude-memory-transfer.tar.gz --exclude='.claude/CLAUDE.md' -C ~
 gh auth login        # etc.
 ```
 
+## Apps & tooling to install (distilled from the old Windows `install.ps1`)
+
+The Windows box was provisioned via Chocolatey (`install.ps1` in `G:\My Drive\EW
+Machine Setup`). Here's the Linux-relevant subset to reinstall — these are *apps*,
+not dotfiles, so they're not in this repo, just listed so nothing is forgotten.
+
+**Dev tooling:** `git` · `gh` · `neovim` · .NET SDK (`dotnet`) · `awscli` ·
+`nvm` + Node 18 & 20 · VS Code · Cursor · Docker (+ post-install group setup) ·
+AWS SAM (via Homebrew) · Python + `ipykernel` (for Jupyter) · oh-my-zsh.
+
+**GUI apps:** Slack · Notion · Gather · YouTube Music · a screenshot tool
+(ShareX on Windows → `flameshot`/`spectacle` on Linux) · Firefox/Chrome · Spotify.
+
+**Hypar dev env vars** (were Windows env vars; not currently in the shell rc — set
+them in `zsh/.zshrc` if you still do local Hypar work, pointing at the Linux paths):
+```sh
+export HYPAR_ELEMENTS="$HOME/source/Elements/Elements/src"
+export HYPAR_FUNCTIONS="$HOME/source/Hypar/Hypar.Functions"
+```
+
+**Skipped (Windows-only):** PowerToys, Inno Setup, ShareX, Revit + RevitLookup
+addin, AutoHotkey (`GranolaAutoStop.ahk`), Oh My Posh theme (`half-life.omp.json`
+— superseded by oh-my-zsh here).
+
 ## Verification checklist — double-check these actually work
 
 - [ ] **New shell is clean.** Open a fresh terminal: `.zshrc` loads with no errors,
