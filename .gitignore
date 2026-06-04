@@ -1,0 +1,14 @@
+# Never commit secrets / machine-local state
+**/hosts.yml
+**/settings.local.json
+.ssh/
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# Windows download-marker cruft (in case Drive material is re-imported)
+*:Zone.Identifier
+
+# Claude memory migration tarball — transfer artifact, not a dotfile
+claude-memory-transfer.tar.gz

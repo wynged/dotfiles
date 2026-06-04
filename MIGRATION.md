@@ -1,0 +1,115 @@
+# Migration: WSL → native Ubuntu
+
+The intent, the work done, and what to double-check on the new machine. Written
+2026-06-03 while still on the source box (WSL), so everything below is built but
+**not yet verified on native Ubuntu** — that's what the checklist is for.
+
+## Intention
+
+Moving from a WSL setup (the `Ubuntu-Dev` distro running under Windows) to a pure
+native Ubuntu install. Goals:
+
+1. Consolidate every meaningful config into one Stow-managed dotfiles repo
+   (`~/source/dotfiles`) so a fresh machine is a `git clone` + `./install.sh`.
+2. Strip everything WSL-specific (WSLg display plumbing, `wsl.exe` wrappers,
+   `wslview`, Windows-PATH interop, the `Zed.exe` alias) and replace it with the
+   native-Linux equivalent.
+3. Make Claude config sync ongoing via git (not a one-off tarball), while keeping
+   accumulated per-project memories machine-local.
+
+## Where we came from (and what changed)
+
+| Area | On WSL | Native Ubuntu (this repo) |
+|---|---|---|
+| Display/clipboard | `DISPLAY=:0`, `WAYLAND_DISPLAY`, `XDG_RUNTIME_DIR` exported in `.zshrc` (WSLg) | Removed — the desktop session provides these |
+| PATH | "strip Windows `(x86)` parens" guard | Removed — no Windows PATH interop |
+| Browser | `BROWSER=wslview` | Removed — `xdg-open` is the default |
+| Editor alias | `zed → /mnt/c/.../Zed.exe` | Removed — native `zed` on PATH |
+| Homebrew/dotnet/jdk | unconditional `brew shellenv` + opt paths | Guarded behind `[ -x .../brew ]` so a brew-less box doesn't error |
+| WezTerm panes | every pane = `wsl.exe -d Ubuntu-Dev -- bash -lc '…'` | plain `bash -lc '…'` + `cwd` on each spawn |
+| WezTerm hall-switch fallback | `wsl.exe -d Ubuntu-Dev -- lookout hall-switch …` | direct `lookout hall-switch …` |
+| Claude memory | manual tarball | config in the `claude` stow package; memories machine-local |
+
+The WezTerm city orchestration (mayor / lookout / hall-shim layout, the
+`/run/user/1000/*.sock` paths, all `Alt+<slot>` and `Ctrl+Shift+*` bindings) is
+otherwise unchanged — only the process-spawn wrapper differed between WSL and native.
+
+## Setup sequence on the new machine
+
+```bash
+# 1. System packages
+sudo apt update
+sudo apt install -y stow zsh tmux git socat xclip   # add wl-clipboard if on Wayland (see checklist)
+
+# 2. Shell framework + runtimes (as the .zshrc expects them)
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+#   …plus: nvm/node, Homebrew, bun, rust/cargo, dotnet — install whichever you use
+#   (the zshrc guards Homebrew, so missing brew is fine; other tools just won't be on PATH)
+
+# 3. Clone dotfiles
+git clone <remote> ~/source/dotfiles
+#   (copy claude-memory-transfer.tar.gz over SEPARATELY — it's gitignored, see CLAUDE.md)
+
+# 4. Clear any colliding default files stow would refuse to overwrite, then stow
+cd ~/source/dotfiles
+#   e.g. a fresh Ubuntu ships a default ~/.bashrc/.profile but usually no ~/.zshrc;
+#   remove/back up anything real that overlaps a package, OR use `stow --adopt <pkg>`.
+./install.sh
+
+# 5. Restore Claude memories (excluding CLAUDE.md — stow owns it; see CLAUDE.md)
+tar xzf claude-memory-transfer.tar.gz --exclude='.claude/CLAUDE.md' -C ~
+
+# 6. Re-auth the things that DON'T travel in dotfiles (see "Not carried over")
+gh auth login        # etc.
+```
+
+## Verification checklist — double-check these actually work
+
+- [ ] **New shell is clean.** Open a fresh terminal: `.zshrc` loads with no errors,
+      even before brew/nvm/etc. are installed (the brew block is guarded). The disk-usage
+      warning fires only above 85%.
+- [ ] **`oh-my-zsh` present.** `echo $ZSH` resolves and the prompt theme loads. If
+      `~/.oh-my-zsh` is missing, the `source $ZSH/oh-my-zsh.sh` line errors — install it (step 2).
+- [ ] **tmux clipboard.** Select text with the mouse → it lands in the system clipboard.
+      `.tmux.conf` uses `xclip` (X11). **Ubuntu 24.04 defaults to Wayland (GNOME)**, where
+      `xclip` only works via XWayland and is flaky. If copy doesn't reach the clipboard,
+      install `wl-clipboard` and swap `xclip -selection clipboard -i` → `wl-copy` in
+      `tmux/.tmux.conf` (2 lines). Verify before assuming it works.
+- [ ] **WezTerm launches the city layout.** On a fresh boot with the city *down*, every
+      pane should fall back to a usable shell (not a dead/closed tab). Requires `socat`
+      and the `lookout` binary present.
+- [ ] **`lookout` binary exists at the hardcoded path.** `.wezterm.lua` and the Claude
+      hooks call `/home/sirwassail/source/city_hy/lookout/lookout`. Confirm `city_hy` is
+      cloned/built there, or update the path in both files.
+- [ ] **Hall switching works.** With a city up, `Alt+1..9` / `Alt+<letter>` switch the
+      viewer; `Ctrl+Shift+M` → mayor, `Ctrl+Shift+L` → toggle lookout. The shim tab named
+      `shim` should appear once.
+- [ ] **Claude status line renders.** Open Claude Code in a git repo — dir, branch, model,
+      ctx%, and the 5h/7d rate-limit bars show. The bars need
+      `~/.claude/.usage-tracking/usage.json`, populated by `usage-probe.sh`. **Verify how
+      that probe is scheduled** (cron? a launch hook?) — it isn't set up by `stow` alone, so
+      the bars may be blank until you wire the probe to run periodically.
+- [ ] **Claude hooks fire.** `settings.json` runs lookout `signal-active`/`signal-waiting`
+      on prompt/stop. With no city, these just no-op; confirm they don't error loudly.
+- [ ] **Memories attached.** In a restored project dir, Claude recalls prior memories.
+      Folder names encode `-home-sirwassail-source-…` — only valid if username (`sirwassail`)
+      and `~/source/...` layout match. If not, rename the encoded folders.
+- [ ] **Global CLAUDE.md is the symlink, not the tarball copy.** `ls -l ~/.claude/CLAUDE.md`
+      should point into `~/source/dotfiles/claude/...`. If it's a real file, the tarball
+      restore included it — delete it and re-run `./install.sh`.
+
+## Not carried over (re-do manually — never in dotfiles)
+
+- **Secrets / keys:** `~/.ssh/`, `~/.aws/`, `~/.gnupg/` — copy securely, out of band.
+- **Auth tokens:** `gh` (`~/.config/gh/hosts.yml`), `~/.claude/.credentials.json`,
+  cloud CLIs — re-login on the new box.
+- **Installed (not config) state:** `~/.claude/plugins/`, nvm-installed node versions,
+  brew packages, cargo crates — reinstall.
+- **Windows-only leftovers (intentionally dropped):** the Drive `clipboard-server.ps1`
+  (native Linux has `xclip`/`wl-clipboard`), `AGENTS.md`, the Cursor beadwork system.
+
+## Open items to revisit
+
+- `usage-probe.sh` scheduling mechanism (see checklist) — confirm and document it here.
+- Decide Wayland vs X11 for the session, then lock in the tmux clipboard tool to match.
+- Wallpapers live in `wallpapers/` (storage only) — set them via GNOME settings manually.
