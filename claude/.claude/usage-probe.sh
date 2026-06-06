@@ -52,7 +52,10 @@ sleep 1
 tmux -L "$SOCKET" send-keys -t "$SESSION" "/exit" Enter 2>/dev/null || true
 
 # Parse the output
-echo "$pane" | awk '
+# NB: requires gawk — uses the 3-arg match($0, re, arr) form and strftime(),
+# both GNU extensions. Call gawk explicitly so this never silently degrades
+# to mawk (Ubuntu's default awk), which can't parse the script.
+echo "$pane" | gawk '
 BEGIN {
   section = ""
   print "{"
