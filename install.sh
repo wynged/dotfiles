@@ -10,9 +10,8 @@
 #   ./install.sh zsh tmux   # stow only the named packages
 #
 # Notes:
-#   - Stow refuses to clobber existing real files. On a machine that already has
-#     ~/.zshrc, back it up / remove it first, or use `stow --adopt` (pulls the
-#     existing file into the repo, then symlinks — review the diff after!).
+#   - Real files (not symlinks) that conflict are backed up to <file>.bak.TIMESTAMP
+#     before stowing, so re-runs are safe and no data is lost.
 #   - wallpapers/ is storage only and is never stowed.
 set -euo pipefail
 
@@ -28,8 +27,26 @@ fi
 if [ "$#" -gt 0 ]; then
   packages=("$@")
 else
-  packages=(zsh tmux git wezterm claude)
+  packages=(zsh tmux git wezterm claude regolith polybar)
 fi
+
+# Back up any real files (not symlinks) that would block stow, then remove them
+# so the subsequent stow call can create the symlink cleanly.
+backup_conflicts() {
+  local pkg="$1" sim_out
+  # Capture separately so stow's non-zero exit (conflict found) doesn't kill us.
+  sim_out=$(stow --target="$HOME" --simulate --restow "$pkg" 2>&1) || true
+  # grep exits 1 when there are no matches; || true keeps the pipeline happy.
+  grep -oP '(?<=existing target )\S+' <<< "$sim_out" \
+    | while read -r rel; do
+        local full="$HOME/$rel"
+        if [ -e "$full" ] && [ ! -L "$full" ]; then
+          local backup="${full}.bak.$(date +%Y%m%d%H%M%S)"
+          echo "  backing up ~/$rel → $backup"
+          mv "$full" "$backup"
+        fi
+      done || true
+}
 
 for pkg in "${packages[@]}"; do
   if [ ! -d "$pkg" ]; then
@@ -37,6 +54,7 @@ for pkg in "${packages[@]}"; do
     continue
   fi
   echo "stow: $pkg"
+  backup_conflicts "$pkg"
   stow --target="$HOME" --restow "$pkg"
 done
 

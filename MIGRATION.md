@@ -92,7 +92,7 @@ also installs a FiraCode Nerd Font for the glyphs — set it as your terminal fo
 - **Hardware utils**: AMD GPU = Mesa (built in, nothing to install); sensors via
   `lm-sensors`+`psensor`, GPU/CPU tuning via **CoreCtrl**; Brother printer/scanner
   = Brother's Linux drivers; SafeNet/Vanta/Krisp publish native Linux agents.
-- **i3** is assumed already set up (the WM); `sudo apt install i3` if not.
+- **Regolith Desktop** (i3/X11 WM) is installed by `bootstrap.sh` — no manual step needed. Log out and select the Regolith session at the login screen.
 
 ## Apps & tooling to install (distilled from the old Windows `install.ps1`)
 
@@ -126,10 +126,9 @@ addin, AutoHotkey (`GranolaAutoStop.ahk`), Oh My Posh theme (`half-life.omp.json
 - [ ] **`oh-my-zsh` present.** `echo $ZSH` resolves and the prompt theme loads. If
       `~/.oh-my-zsh` is missing, the `source $ZSH/oh-my-zsh.sh` line errors — install it (step 2).
 - [ ] **tmux clipboard.** Select text with the mouse → it lands in the system clipboard.
-      `.tmux.conf` uses `xclip` (X11). **Ubuntu 24.04 defaults to Wayland (GNOME)**, where
-      `xclip` only works via XWayland and is flaky. If copy doesn't reach the clipboard,
-      install `wl-clipboard` and swap `xclip -selection clipboard -i` → `wl-copy` in
-      `tmux/.tmux.conf` (2 lines). Verify before assuming it works.
+      `.tmux.conf` uses `xclip` (X11), which is correct for the Regolith/i3 X11 session.
+      `xclip` is installed by `bootstrap.sh`. Verify it actually reaches the clipboard on
+      the new machine — select in tmux copy-mode and paste elsewhere.
 - [ ] **WezTerm launches the city layout.** On a fresh boot with the city *down*, every
       pane should fall back to a usable shell (not a dead/closed tab). Requires `socat`
       and the `lookout` binary present.
@@ -166,5 +165,4 @@ addin, AutoHotkey (`GranolaAutoStop.ahk`), Oh My Posh theme (`half-life.omp.json
 ## Open items to revisit
 
 - `usage-probe.sh` scheduling mechanism (see checklist) — confirm and document it here.
-- Decide Wayland vs X11 for the session, then lock in the tmux clipboard tool to match.
-- Wallpapers live in `wallpapers/` (storage only) — set them via GNOME settings manually.
+- Wallpapers live in `wallpapers/` (storage only) — set them via Regolith/i3 config or a session autostart script.

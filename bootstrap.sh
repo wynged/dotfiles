@@ -24,6 +24,7 @@ NVM_VERSION="v0.40.1"                        # bump to the latest nvm release ta
 AWSCLI_VERSION="2.27.48"                     # pinned to exactly match the source box
 SAM_VERSION="1.142.1"                        # pinned to exactly match the source box
 PYENV_PYTHON="3.13"                          # python version pyenv installs + globals
+REGOLITH_RELEASE="v3.4"                      # bump when Regolith cuts a new release
 
 DO_STOW=1; DO_APPS=1
 for a in "$@"; do
@@ -108,6 +109,14 @@ if ! have docker; then
     | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 fi
 
+# Regolith Desktop (i3/X11 session — the WM; replaces bare i3)
+if ! dpkg -l regolith-desktop 2>/dev/null | grep -q '^ii'; then
+  wget -qO - https://archive.regolith-desktop.com/regolith.key \
+    | gpg --dearmor | sudo tee /usr/share/keyrings/regolith-archive-keyring.gpg >/dev/null
+  echo "deb [arch=$ARCH signed-by=/usr/share/keyrings/regolith-archive-keyring.gpg] https://archive.regolith-desktop.com/ubuntu/stable ${CODENAME} ${REGOLITH_RELEASE}" \
+    | sudo tee /etc/apt/sources.list.d/regolith.list >/dev/null
+fi
+
 sudo apt-get update -y
 sudo apt-get install --only-upgrade -y git || sudo apt-get install -y git
 have gh      || sudo apt-get install -y gh
@@ -117,6 +126,8 @@ if ! have docker; then
   sudo usermod -aG docker "$USER"
   note "Added $USER to 'docker' group — log out/in (or 'newgrp docker') to use docker without sudo."
 fi
+dpkg -l regolith-desktop 2>/dev/null | grep -q '^ii' \
+  || sudo apt-get install -y regolith-desktop regolith-session-flashback regolith-look-lascaille xdg-desktop-portal-regolith
 
 # ─────────────────────────────────────────────────────────────────────────────
 c "3. Official install scripts (priority 2 — self-updating)"
@@ -287,8 +298,7 @@ note "  • Gas City stack: install with its own (separate) bootstrap"
 #   • rclone + Google Drive — `sudo apt install rclone` then `rclone config`;
 #     treat as a learning task (no official GDrive client on Linux).
 #   • Conky (Rainmeter replacement) — `sudo apt install conky-all`; desktop overlay,
-#     configured from your i3 config.
-#   • i3 window manager itself — assumed already set up; `sudo apt install i3` if not.
+#     configured from your Regolith/i3 config.
 #
 # WINDOWS-ONLY / no Linux equivalent (plan around — see MIGRATION.md):
 #   Autodesk/AEC stack (Revit, AutoCAD, pyRevit, RevitLookup, DIALux) → dual-boot

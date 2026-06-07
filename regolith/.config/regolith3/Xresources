@@ -1,0 +1,48 @@
+! Gaps between windows and screen edges
+i3-wm.gaps.inner: 8
+i3-wm.gaps.outer: 4
+! Remove gaps when only one window occupies the workspace
+i3-wm.gaps.smart: on
+
+! ---------------------------------------------------------------------------
+! Relocate Regolith default bindings that collide with our custom shortcuts in
+! i3/config.d/60-keybindings.conf. Without these, i3 reports duplicate
+! keybindings on every reload. Values are the suffix after the mod (Super) key.
+! ---------------------------------------------------------------------------
+
+! Free Super+Shift+s for the flameshot screenshot binding (was Sleep).
+wm.binding.sleep: Ctrl+Shift+s
+
+! Free Super+Ctrl+l and Super+Ctrl+h for our resize bindings. These are only
+! the vim-key aliases for workspace-on-output; Super+Ctrl+Tab and
+! Super+Ctrl+Shift+Tab still do the same thing.
+wm.binding.ws_next_on_output2: Ctrl+period
+wm.binding.ws_prev_on_output2: Ctrl+comma
+
+! ---------------------------------------------------------------------------
+! Bar: the built-in Regolith i3bar is REPLACED by Polybar (stow package
+! polybar, launched from i3/config.d/70-autostart.conf) so we get centered
+! workspaces on the ultrawide. Hide i3bar entirely and release the system tray
+! so Polybar can own it (only one program may hold the X tray).
+!   - mode invisible : i3bar never draws (not even on $mod, unlike "hide")
+!   - trayoutput none : i3bar stops managing the tray
+! ---------------------------------------------------------------------------
+wm.bar.mode: invisible
+wm.bar.trayoutput: none
+
+! These two only affected the old i3bar (now hidden); harmless, kept for the
+! day we might switch back.
+wm.bar.stripworkspacenumbers: no
+wm.bar.workspace_min_width: 44
+
+! Per-workspace labels. Format is "number  glyph"; the leading number is what
+! i3 routes on, so `workspace number N` and the assign rules keep working.
+! The Polybar i3 module reuses these names, so the icons show in Polybar too.
+! Unassigned workspaces (2, 3, 6, 11-19) keep their plain numbers.
+wm.workspace.01.name: 1  
+wm.workspace.04.name: 4  
+wm.workspace.05.name: 5  
+wm.workspace.07.name: 7  
+wm.workspace.08.name: 8  
+wm.workspace.09.name: 9  
+wm.workspace.10.name: 10  

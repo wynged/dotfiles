@@ -1,0 +1,13 @@
+{
+  "layout": "splith",
+  "nodes": [
+    {
+      "percent": 0.50,
+      "swallows": [{ "class": "^org\\.gnome\\.Nautilus$" }]
+    },
+    {
+      "percent": 0.50,
+      "swallows": [{ "class": "^org\\.wezfurlong\\.wezterm$" }]
+    }
+  ]
+}
