@@ -27,8 +27,11 @@ trap cleanup EXIT
 
 cleanup
 
-# Start a detached Claude session using Haiku to minimize token usage
-tmux -L "$SOCKET" new-session -d -s "$SESSION" -x 120 -y 40 \
+# Start a detached Claude session using Haiku to minimize token usage.
+# Pane height is generous (-y 80) so the full /usage dialog renders without
+# clipping — when it's too short, the "Current session" header scrolls off the
+# top and the parser can't anchor the 5h section.
+tmux -L "$SOCKET" new-session -d -s "$SESSION" -x 120 -y 80 \
   "claude --dangerously-skip-permissions --model haiku 2>&1"
 
 # Wait for Claude to initialize (show the prompt)
@@ -80,7 +83,10 @@ tmux -L "$SOCKET" send-keys -t "$SESSION" "/exit" Enter 2>/dev/null || true
 # to mawk (Ubuntu's default awk), which can't parse the script.
 echo "$pane" | gawk '
 BEGIN {
-  section = ""
+  # Default to the 5h session: it is always the first block in /usage, and its
+  # "Current session" header can scroll off the top of a short pane. Anchoring
+  # by position (everything before "Current week") makes parsing clip-proof.
+  section = "session_5h"
   print "{"
   first = 1
 }
