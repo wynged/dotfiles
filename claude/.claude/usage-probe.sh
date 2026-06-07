@@ -39,12 +39,35 @@ for i in $(seq 1 20); do
   fi
 done
 
-# Send /usage
-tmux -L "$SOCKET" send-keys -t "$SESSION" "/usage" Enter
-sleep 3
+# Settle: the '❯' glyph shows up in the welcome splash before the input is
+# actually ready, and SessionStart hooks (e.g. `bd prime`) trigger a redraw at
+# startup that can swallow the first keystroke. Give it a moment before typing.
+sleep 2
 
-# Capture the dialog
-pane=$(tmux -L "$SOCKET" capture-pane -t "$SESSION" -p 2>/dev/null)
+# Send /usage and submit as separate keystrokes, then poll until the usage
+# dialog actually renders. If the first attempt got eaten during a redraw,
+# re-send. We look for the parser's anchor text ("Current session" / "% used").
+pane=""
+for attempt in 1 2 3; do
+  tmux -L "$SOCKET" send-keys -t "$SESSION" "/usage"
+  sleep 1
+  tmux -L "$SOCKET" send-keys -t "$SESSION" Enter
+
+  # Poll up to ~8s for the dialog to appear
+  for i in $(seq 1 8); do
+    sleep 1
+    pane=$(tmux -L "$SOCKET" capture-pane -t "$SESSION" -p 2>/dev/null)
+    if echo "$pane" | grep -q 'Current session'; then
+      break
+    fi
+  done
+
+  echo "$pane" | grep -q 'Current session' && break
+
+  # Not rendered — clear any stray input and try again
+  tmux -L "$SOCKET" send-keys -t "$SESSION" Escape
+  sleep 1
+done
 
 # Dismiss and exit
 tmux -L "$SOCKET" send-keys -t "$SESSION" Escape
