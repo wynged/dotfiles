@@ -118,6 +118,37 @@ export HYPAR_FUNCTIONS="$HOME/source/Hypar/Hypar.Functions"
 addin, AutoHotkey (`GranolaAutoStop.ahk`), Oh My Posh theme (`half-life.omp.json`
 — superseded by oh-my-zsh here).
 
+### Vocalinux — local dictation (whisper.cpp, GPU via Vulkan)
+
+Offline push-to-talk speech-to-text ([jatinkrmalik/vocalinux](https://github.com/jatinkrmalik/vocalinux)),
+chosen over `obra/pepper-x` (GNOME/Wayland-only; this box is Regolith i3 on **X11**).
+It builds its own venv at `~/source/vocalinux` so the app itself isn't in this repo,
+but the **fixed wrappers + config travel in the `vocalinux` stow package**. Reinstall order:
+
+```sh
+# 1. Build it (creates ~/source/vocalinux/venv + downloads the model on first run)
+git clone https://github.com/jatinkrmalik/vocalinux ~/source/vocalinux
+cd ~/source/vocalinux
+sudo apt install -y libgirepository-2.0-dev   # installer pulls the wrong gir dev pkg;
+                                              # this provides girepository-2.0.pc for the PyGObject build
+./install.sh --auto --engine=whisper_cpp
+
+# 2. Re-apply the local fixes: backs up the installer's generated wrappers/config, symlinks ours
+cd ~/source/dotfiles && ./install.sh vocalinux
+```
+
+The stow package re-applies three machine-specific fixes the installer doesn't:
+- `GI_TYPELIB_PATH` adds `/usr/lib/girepository-1.0` so AppIndicator3's typelib is found
+  (the installer only sets the arch-specific path → the tray icon import fails).
+- A non-IBus IM (`GTK_IM_MODULE=simple`, `XMODIFIERS=@im=none`, process-local) forces
+  `xdotool`/XTEST injection, which reaches WezTerm/tmux/the Claude CLI; IBus text commits
+  silently vanish in terminals that provide no IBus input context.
+- `config.json` pinned to the whisper.cpp **medium** model + double-tap-Ctrl toggle.
+
+Use: double-tap **Ctrl** → speak → double-tap **Ctrl**; text types into the focused field.
+(Unrelated: occasional screen flicker is amdgpu mclk-switching on the RX 6600, not Vocalinux —
+pin with `echo high | sudo tee /sys/class/drm/card1/device/power_dpm_force_performance_level` if it bothers you.)
+
 ## Verification checklist — double-check these actually work
 
 - [ ] **New shell is clean.** Open a fresh terminal: `.zshrc` loads with no errors,
@@ -151,6 +182,11 @@ addin, AutoHotkey (`GranolaAutoStop.ahk`), Oh My Posh theme (`half-life.omp.json
 - [ ] **Global CLAUDE.md is the symlink, not the tarball copy.** `ls -l ~/.claude/CLAUDE.md`
       should point into `~/source/dotfiles/claude/...`. If it's a real file, the tarball
       restore included it — delete it and re-run `./install.sh`.
+- [ ] **Vocalinux dictation works.** After building it + `./install.sh vocalinux`,
+      `ls -l ~/.local/bin/vocalinux` is a symlink into the repo. Launch `vocalinux`, focus a
+      field, double-tap Ctrl and speak — text should type in (including WezTerm/the Claude CLI).
+      If text appears in GTK/Qt apps but vanishes in terminals, the IBus→xdotool wrapper
+      override didn't apply (check `GTK_IM_MODULE`/`XMODIFIERS` in the stowed wrapper).
 
 ## Not carried over (re-do manually — never in dotfiles)
 
