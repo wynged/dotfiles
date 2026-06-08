@@ -1,0 +1,47 @@
+#!/bin/bash
+# Wrapper script for Vocalinux that sets required environment variables
+# and applies the 'input' group for keyboard shortcuts on Wayland
+export PYTHONNOUSERSITE=1
+# Force xdotool injection instead of IBus: IBus commits text to an input context
+# that terminals like WezTerm don't provide, so dictated text silently vanishes
+# there. Setting a non-IBus IM for this process only makes Vocalinux fall back to
+# xdotool (XTEST), which works in every X11 app. Does not affect other apps.
+export GTK_IM_MODULE=simple
+export QT_IM_MODULE=simple
+export XMODIFIERS=@im=none
+unset INPUT_METHOD
+export GI_TYPELIB_PATH=/usr/lib/x86_64-linux-gnu/girepository-1.0:/usr/lib/girepository-1.0
+PYWHISPERCPP_LIBRARY_PATH=""
+PY_SITE_PATHS=$("/home/sirwassail/source/vocalinux/venv/bin/python" - <<'PY' 2>/dev/null
+import sysconfig
+
+paths = []
+for key in ("platlib", "purelib"):
+    path = sysconfig.get_paths().get(key)
+    if path and path not in paths:
+        paths.append(path)
+print(" ".join(paths))
+PY
+)
+for PY_SITE in $PY_SITE_PATHS; do
+    for PY_LIB_DIR in "$PY_SITE/pywhispercpp.libs" "$PY_SITE/pywhispercpp/.libs" "$PY_SITE/pywhispercpp/lib"; do
+        if [ -d "$PY_LIB_DIR" ] && { ls "$PY_LIB_DIR"/libwhisper*.so* >/dev/null 2>&1 || ls "$PY_LIB_DIR"/libggml*.so* >/dev/null 2>&1; }; then
+            if [ -z "$PYWHISPERCPP_LIBRARY_PATH" ]; then
+                PYWHISPERCPP_LIBRARY_PATH="$PY_LIB_DIR"
+            else
+                PYWHISPERCPP_LIBRARY_PATH="$PYWHISPERCPP_LIBRARY_PATH:$PY_LIB_DIR"
+            fi
+        fi
+    done
+done
+if [ -n "$PYWHISPERCPP_LIBRARY_PATH" ]; then
+    export LD_LIBRARY_PATH="$PYWHISPERCPP_LIBRARY_PATH${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
+
+# Check if user is in input group but current session doesn't have it
+if grep -q "^input:.*\b$(whoami)\b" /etc/group 2>/dev/null && ! groups | grep -q '\binput\b'; then
+    # Use sg to run with input group without requiring logout
+    exec sg input -c "/home/sirwassail/source/vocalinux/venv/bin/vocalinux $*"
+else
+    exec "/home/sirwassail/source/vocalinux/venv/bin/vocalinux" "$@"
+fi

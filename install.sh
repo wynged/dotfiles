@@ -27,7 +27,7 @@ fi
 if [ "$#" -gt 0 ]; then
   packages=("$@")
 else
-  packages=(zsh tmux git wezterm claude regolith polybar)
+  packages=(zsh tmux git wezterm claude regolith polybar vocalinux)
 fi
 
 # Back up any real files (not symlinks) that would block stow, then remove them
