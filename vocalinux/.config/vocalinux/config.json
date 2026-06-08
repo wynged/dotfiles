@@ -22,8 +22,8 @@
         "enabled": true
     },
     "shortcuts": {
-        "toggle_recognition": "ctrl+ctrl",
-        "mode": "toggle"
+        "toggle_recognition": "left_alt+left_alt",
+        "mode": "push_to_talk"
     },
     "ui": {
         "start_minimized": true,
