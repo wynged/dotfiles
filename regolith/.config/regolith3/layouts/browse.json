@@ -1,0 +1,13 @@
+{
+  "layout": "splith",
+  "nodes": [
+    {
+      "percent": 0.33,
+      "swallows": [{ "class": "^Claude$" }]
+    },
+    {
+      "percent": 0.67,
+      "swallows": [{ "class": "^Google-chrome$" }]
+    }
+  ]
+}
