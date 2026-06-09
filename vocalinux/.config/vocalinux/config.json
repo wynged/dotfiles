@@ -7,7 +7,7 @@
         "whisper_model_size": "tiny",
         "whisper_cpp_model_size": "medium",
         "vad_sensitivity": 3,
-        "silence_timeout": 0.7000000000000001,
+        "silence_timeout": 0.8,
         "stop_sound_guard_ms": 200,
         "voice_commands_enabled": null,
         "remote_api_url": "",
