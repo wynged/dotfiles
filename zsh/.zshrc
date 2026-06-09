@@ -125,3 +125,7 @@ if command -v yazi >/dev/null; then
     rm -f -- "$tmp"
   }
 fi
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
