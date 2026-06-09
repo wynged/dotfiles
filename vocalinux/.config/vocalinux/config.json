@@ -7,7 +7,7 @@
         "whisper_model_size": "tiny",
         "whisper_cpp_model_size": "medium",
         "vad_sensitivity": 3,
-        "silence_timeout": 1.0,
+        "silence_timeout": 0.7000000000000001,
         "stop_sound_guard_ms": 200,
         "voice_commands_enabled": null,
         "remote_api_url": "",
@@ -23,7 +23,7 @@
     },
     "shortcuts": {
         "toggle_recognition": "left_alt+left_alt",
-        "mode": "push_to_talk"
+        "mode": "toggle"
     },
     "ui": {
         "start_minimized": true,
