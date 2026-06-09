@@ -1,0 +1,11 @@
+# Input-method selector, read by /etc/X11/Xsession.d/70im-config_launch at login.
+#
+# "run_im none" = start NO input-method framework. We deliberately disable IBus:
+# its XIM bridge (ibus-x11 / ibus-extension-gtk3) leaks thousands of invisible 1x1
+# windows over time, and once enough pile up, every GTK4 app (Nautilus,
+# gnome-text-editor, ...) aborts on launch with an xcb "_XReply" assertion.
+# US-English typing needs no IM framework, and Vocalinux injects text via
+# xdotool/XTEST (not IBus), so nothing here depends on IBus.
+#
+# Revert with:  run_im ibus   (or `im-config -n ibus`)
+run_im none

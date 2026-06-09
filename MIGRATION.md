@@ -149,6 +149,22 @@ Use: double-tap **Ctrl** → speak → double-tap **Ctrl**; text types into the 
 (Unrelated: occasional screen flicker is amdgpu mclk-switching on the RX 6600, not Vocalinux —
 pin with `echo high | sudo tee /sys/class/drm/card1/device/power_dpm_force_performance_level` if it bothers you.)
 
+### Input method — IBus disabled session-wide (`regolith` package)
+
+Vocalinux dodges IBus per-process (above), but the rest of the session defaulted to
+IBus, and IBus's XIM bridge (`ibus-x11` / `ibus-extension-gtk3`) **leaks invisible 1×1
+windows** without bound. Once enough pile up (saw 8k→39k over a day), every GTK4 app
+(Nautilus, gnome-text-editor, …) aborts on launch with an xcb `_XReply` assertion —
+the window flashes once and vanishes. So the `regolith` stow package now disables IBus
+session-wide, making the whole session match Vocalinux's per-process choice:
+
+- `~/.xinputrc` → `run_im none` — `ibus-daemon` never starts at login, so nothing leaks.
+- `~/.xsessionrc` → `GTK_IM_MODULE=simple`, `XMODIFIERS=@im=none`, `QT_IM_MODULE=` —
+  sourced before i3, so every app uses the plain built-in IM. US-English needs no IM
+  framework; revert with `run_im ibus` in `~/.xinputrc` if a CJK/compose IM is ever needed.
+
+Takes effect on next login. To unstick a live session without logging out: `ibus restart`.
+
 ## Verification checklist — double-check these actually work
 
 - [ ] **New shell is clean.** Open a fresh terminal: `.zshrc` loads with no errors,

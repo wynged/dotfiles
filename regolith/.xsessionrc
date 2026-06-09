@@ -1,0 +1,10 @@
+# Sourced early by the X session via /etc/X11/Xsession.d/40x11-common_xsessionrc,
+# before i3 starts, so i3 and everything it launches inherit these.
+#
+# Belt-and-suspenders to the `run_im none` in ~/.xinputrc: force the plain built-in
+# input methods so no app routes through IBus (whose XIM bridge leaks 1x1 windows
+# and crashes GTK4 apps). This mirrors session-wide the per-process choice the
+# Vocalinux wrappers already make for themselves.
+export GTK_IM_MODULE=simple
+export XMODIFIERS=@im=none
+export QT_IM_MODULE=        # was "ibus" from the default session; blank = don't use IBus
