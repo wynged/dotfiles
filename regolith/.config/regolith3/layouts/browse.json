@@ -3,7 +3,11 @@
   "nodes": [
     {
       "percent": 0.33,
-      "swallows": [{ "class": "^Claude$" }]
+      "layout": "tabbed",
+      "nodes": [
+        { "swallows": [{ "class": "^Claude$" }] },
+        { "swallows": [{ "class": "^obsidian$" }] }
+      ]
     },
     {
       "percent": 0.67,
