@@ -8,7 +8,7 @@
     # monitor 0 = the DisplayPort-1 ultrawide (3440x1440). Top-right corner.
     monitor = 0
     follow = mouse
-    origin = top-right
+    origin = bottom-right
     offset = 24x24
     width = 460
     height = (0, 400)
