@@ -129,6 +129,13 @@ fi
 dpkg -l regolith-desktop 2>/dev/null | grep -q '^ii' \
   || sudo apt-get install -y regolith-desktop regolith-session-flashback regolith-look-lascaille xdg-desktop-portal-regolith
 
+# dunst — notification daemon. Regolith ships rofication, which only QUEUES
+# notifications (view via rofi) and never shows on-screen toasts, so Slack/etc.
+# pop-ups are silently invisible. Installing dunst makes apt remove rofication
+# (both can't own org.freedesktop.Notifications). dunst is D-Bus activated, so
+# it auto-launches on the first notification — no autostart entry needed.
+dpkg -l dunst 2>/dev/null | grep -q '^ii' || sudo apt-get install -y dunst
+
 # ─────────────────────────────────────────────────────────────────────────────
 c "3. Official install scripts (priority 2 — self-updating)"
 

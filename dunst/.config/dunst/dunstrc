@@ -1,0 +1,75 @@
+# dunst — notification daemon config.
+# Replaces Regolith's rofication (which only queued notifications and never
+# toasted). Colors track the Ayu Mirage palette used by polybar/Regolith.
+# Stowed from dotfiles: dunst/.config/dunst/dunstrc -> ~/.config/dunst/dunstrc.
+
+[global]
+    # ── Geometry ────────────────────────────────────────────────────────────
+    # monitor 0 = the DisplayPort-1 ultrawide (3440x1440). Top-right corner.
+    monitor = 0
+    follow = mouse
+    origin = top-right
+    offset = 24x24
+    width = 460
+    height = (0, 400)
+    notification_limit = 6
+    gap_size = 8
+
+    # ── Appearance ──────────────────────────────────────────────────────────
+    frame_width = 2
+    corner_radius = 8
+    separator_height = 2
+    padding = 12
+    horizontal_padding = 14
+    text_icon_padding = 8
+    progress_bar = true
+    transparency = 8
+
+    # ── Text ────────────────────────────────────────────────────────────────
+    font = sans 11
+    line_height = 2
+    markup = full
+    format = "<b>%s</b>\n%b"
+    word_wrap = yes
+    ellipsize = end
+    show_age_threshold = 60
+
+    # ── Icons ───────────────────────────────────────────────────────────────
+    icon_position = left
+    min_icon_size = 32
+    max_icon_size = 64
+    enable_recursive_icon_lookup = true
+
+    # ── Behaviour ───────────────────────────────────────────────────────────
+    # Don't get hidden behind fullscreen windows (video calls, etc.).
+    fullscreen = show
+    sort = yes
+    stack_duplicates = true
+    hide_duplicate_count = false
+    idle_threshold = 120
+    history_length = 50
+
+    # ── Mouse ───────────────────────────────────────────────────────────────
+    mouse_left_click = do_action, close_current
+    mouse_middle_click = close_all
+    mouse_right_click = context
+
+[urgency_low]
+    background = "#1F2430"
+    foreground = "#BFBAB0"
+    frame_color = "#77A8D9"
+    timeout = 8
+
+[urgency_normal]
+    background = "#1F2430"
+    foreground = "#E6E1CF"
+    frame_color = "#FFA759"
+    # Long enough to actually notice a Slack ping when glancing away.
+    timeout = 18
+
+[urgency_critical]
+    background = "#1F2430"
+    foreground = "#E6E1CF"
+    frame_color = "#FF3333"
+    # Never auto-dismiss — stays until clicked.
+    timeout = 0
