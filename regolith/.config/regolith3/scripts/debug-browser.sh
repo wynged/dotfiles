@@ -24,7 +24,16 @@ fi
 # 50-assignments.conf. The dedicated --user-data-dir is mandatory: since Chrome
 # 136 the remote-debugging port is refused on the default profile, and it also
 # keeps the debug pane clean/isolated from the main browser + PWAs.
+#
+# The three --disable-*-(throttling|backgrounding) flags keep background/hidden
+# tabs fully alive — JS timers run at full speed and the renderer keeps normal
+# priority — so long-running tasks finish in tabs we're not looking at. (These
+# are the same flags Puppeteer/Playwright pass by default.) Tab *discarding*
+# (Memory Saver) isn't forced by a flag; it's off in this isolated profile.
 google-chrome --class=chrome-dev \
   --user-data-dir="$HOME/.config/chrome-dev-profile" \
   --remote-debugging-port="$PORT" \
+  --disable-background-timer-throttling \
+  --disable-backgrounding-occluded-windows \
+  --disable-renderer-backgrounding \
   --new-window "$URL" &
