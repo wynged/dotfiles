@@ -41,7 +41,16 @@ bar() { polybar-msg action "#recording.hook.$1" >/dev/null 2>&1 || true; }
 if pgrep -f "$MATCH" >/dev/null; then
   pkill -SIGINT -f "$MATCH"
   bar 0
-  notify-send -i media-record-symbolic "Screen recording" "Stopped — saved to $OUTDIR"
+  # Wait (bounded, ~3s) for gpu-screen-recorder to finalize the file before we
+  # reveal it, so the clip is complete and its size is final.
+  for _ in $(seq 1 30); do pgrep -f "$MATCH" >/dev/null || break; sleep 0.1; done
+  last="$(ls -t "$OUTDIR"/rec-*.mkv 2>/dev/null | head -1)"
+  notify-send -i media-record-symbolic "Screen recording" "Stopped — saved ${last:+$(basename "$last")}"
+  # ShareX-style: pop the file manager with the clip pre-selected so it's ready to
+  # drag straight into wherever you're sharing it. (Delete this block if unwanted.)
+  if [ -n "$last" ] && command -v nautilus >/dev/null; then
+    nautilus --select "$last" >/dev/null 2>&1 &
+  fi
   exit 0
 fi
 
