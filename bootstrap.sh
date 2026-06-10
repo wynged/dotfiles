@@ -272,6 +272,28 @@ note "Slack: open https://app.slack.com in Chrome, sign in, then install it as a
 note "       app — address-bar install icon, or Chrome menu ▸ Cast, save & share ▸ Install."
 
 note "guvcview camera zoom: verify your webcam exposes it →  v4l2-ctl -d /dev/video0 --list-ctrls  (look for zoom_absolute)"
+
+# gpu-screen-recorder — ShareX-style hardware-encoded screen recorder (AMD VAAPI).
+# Not in apt and upstream ships only Flatpak/AUR, so build from source (apt deps +
+# meson). Won't self-update: `git pull && sudo ./install.sh` in the clone to upgrade.
+# Driven by the Super+Shift+r toggle in regolith's 60-keybindings.conf.
+if ! have gpu-screen-recorder; then
+  sudo apt-get install -y \
+    meson ninja-build pkg-config build-essential git \
+    libx11-dev libxcomposite-dev libxrandr-dev libxfixes-dev libxdamage-dev \
+    libwayland-dev libwayland-bin wayland-protocols \
+    libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libavfilter-dev \
+    libva-dev libpulse-dev libdrm-dev libcap-dev libvulkan-dev \
+    libdbus-1-dev libpipewire-0.3-dev linux-headers-generic \
+    || note "gpu-screen-recorder build deps: one package failed"
+  gsr_src="$HOME/source/gpu-screen-recorder"
+  if [ ! -d "$gsr_src" ]; then
+    git clone https://git.dec05eba.com/gpu-screen-recorder "$gsr_src" || note "gpu-screen-recorder clone failed"
+  fi
+  if [ -d "$gsr_src" ]; then
+    ( cd "$gsr_src" && sudo ./install.sh ) || note "gpu-screen-recorder build failed — see $gsr_src"
+  fi
+fi
 fi  # DO_APPS
 
 # ─────────────────────────────────────────────────────────────────────────────

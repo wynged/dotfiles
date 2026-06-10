@@ -105,7 +105,9 @@ not dotfiles, so they're not in this repo, just listed so nothing is forgotten.
 AWS SAM (via Homebrew) · Python + `ipykernel` (for Jupyter) · oh-my-zsh.
 
 **GUI apps:** Slack · Notion · Gather · YouTube Music · a screenshot tool
-(ShareX on Windows → `flameshot`/`spectacle` on Linux) · Firefox/Chrome · Spotify.
+(ShareX on Windows → `flameshot`/`spectacle` on Linux) · screen recording
+(ShareX video → `gpu-screen-recorder`, built from source in `bootstrap.sh`,
+toggled by Super+Shift+v) · Firefox/Chrome · Spotify.
 
 **Hypar dev env vars** (were Windows env vars; not currently in the shell rc — set
 them in `zsh/.zshrc` if you still do local Hypar work, pointing at the Linux paths):

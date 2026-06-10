@@ -22,3 +22,15 @@ if type polybar >/dev/null 2>&1; then
     disown
   done
 fi
+
+# The recording indicator ([module/recording]) is custom/ipc, which resets to
+# its blank initial state on every (re)launch. If a gpu-screen-recorder is
+# already running (e.g. this is an i3 reload mid-recording), re-show "● REC"
+# once the new bar's IPC socket is ready. Bracketed [g] so this never matches
+# its own command line.
+if pgrep -f '[g]pu-screen-recorder' >/dev/null 2>&1; then
+  for _ in $(seq 1 20); do
+    polybar-msg action "#recording.hook.1" >/dev/null 2>&1 && break
+    sleep 0.1
+  done
+fi
