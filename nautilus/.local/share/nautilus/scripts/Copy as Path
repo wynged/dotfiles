@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Nautilus script: copy the full path(s) of the selected item(s) to the clipboard.
+# Appears under right-click → Scripts → Copy as Path.
+# NAUTILUS_SCRIPT_SELECTED_FILE_PATHS is newline-separated with a trailing newline.
+printf '%s' "${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS%$'\n'}" | xclip -selection clipboard
