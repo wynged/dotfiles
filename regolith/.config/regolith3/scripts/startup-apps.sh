@@ -12,6 +12,15 @@ set -euo pipefail
 
 CHROME=google-chrome
 
+# Reboot kills Chrome uncleanly, so its next launch crash-restores the previous
+# session's PWA windows — duplicating the three we launch below. Mark the prior
+# exit clean (Chrome isn't running yet at login) so only our launches open.
+# Pinned tabs are unaffected: they live in the separate pinned_tabs pref.
+PREFS="$HOME/.config/google-chrome/Default/Preferences"
+if ! pgrep -x chrome >/dev/null && [[ -f "$PREFS" ]]; then
+  sed -i 's/"exit_type":"Crashed"/"exit_type":"Normal"/' "$PREFS"
+fi
+
 # PWA app windows (Default profile), routed by their crx_<app-id> instance:
 #   YouTube Music → ws7   |   Hypar-Slack → ws9   |   Gather → ws9
 "$CHROME" --profile-directory=Default --app-id=cinhimbnkkaeohfgghhklpknlkffjgod &  # YouTube Music
